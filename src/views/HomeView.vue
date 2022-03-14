@@ -15,6 +15,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
+var chairModel;
+
+
 export default {
   name: 'HomeView',
   colors,
@@ -126,7 +129,6 @@ export default {
     },
 
     setChairModel() {
-      var chairModel = this.chairModel;
       var tempScene = this.scene;
 
       new GLTFLoader().load(
@@ -230,14 +232,16 @@ export default {
       });
 
       this.setMaterial( 'legs', new_mtl);
-    // },
-    // setMaterial( type, mtl) {
-    //   this.chairModel.traverse((o) => {
-    //     if (o.isMesh && o.nameID != null) {
-    //
-    //     }
-    //   })
-    // },
+    },
+    setMaterial( type, mtl) {
+      chairModel.traverse((o) => {
+        if (o.isMesh && o.nameID != null) {
+          if(o.nameID == type) {
+            o.material = mtl;
+          }
+        }
+      })
+    },
     render() {
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.render);
