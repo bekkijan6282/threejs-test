@@ -1,5 +1,37 @@
 <template>
   <section>
+    <div class="options">
+      <div class="option --is-active" data-option="legs">
+        <img
+            src="/images/chair/legs.svg"
+            alt=""
+        />
+      </div>
+      <div class="option" data-option="cushions">
+        <img
+            src="/images/chair/cushions.svg"
+            alt=""
+        />
+      </div>
+      <div class="option" data-option="base">
+        <img
+            src="/images/chair/base.svg"
+            alt=""
+        />
+      </div>
+      <div class="option" data-option="supports">
+        <img
+            src="/images/chair/supports.svg"
+            alt=""
+        />
+      </div>
+      <div class="option" data-option="back">
+        <img
+            src="/images/chair/back.svg"
+            alt=""
+        />
+      </div>
+    </div>
     <canvas id="c"></canvas>
     <div class="controls">
       <div id="js-tray" class="tray">
@@ -51,8 +83,10 @@ export default {
           shininess: 0,
         },
       },
-      MODEL_PATH: "https://s3-us-west-2.amazonaws.com/s.cdpn.io/1376484/chair.glb",
+      MODEL_PATH: "/models/chair/chair.glb",
       chairModel: null,
+      activeOption: 'legs',
+      options: null,
     }
   },
   mounted () {
@@ -86,6 +120,7 @@ export default {
     this.render();
     this.buildCustomColors();
     this.addListenerToSwatches()
+    this.handleChairOptionSet()
   },
   methods: {
     setHemiLight () {
@@ -207,11 +242,16 @@ export default {
     },
     buildCustomColors() {
       var palette = document.getElementById('js-tray-slide');
+
       for (let [i, color] of colors.entries()) {
         let swatch = document.createElement('div');
         swatch.classList.add('tray__swatch');
+        if (color.texture) {
+          swatch.style.backgroundImage = "url("+color.texture+")";
+        } else {
+          swatch.style.background = '#'+color.color;
+        }
 
-        swatch.style.background = '#'+color.color;
         swatch.setAttribute('data-key',i);
         palette.append(swatch);
       }
@@ -231,7 +271,7 @@ export default {
         shininess: color.shininess ? color.shininess : 10
       });
 
-      this.setMaterial( 'legs', new_mtl);
+      this.setMaterial( this.activeOption, new_mtl);
     },
     setMaterial( type, mtl) {
       chairModel.traverse((o) => {
@@ -241,6 +281,20 @@ export default {
           }
         }
       })
+    },
+    handleChairOptionSet() {
+      this.options = document.querySelectorAll('.option');
+      for (const option of this.options) {
+        option.addEventListener('click', this.handleOptionCLick)
+      }
+    },
+    handleOptionCLick(e) {
+      let option = e.target;
+      this.activeOption = e.target.dataset.option;
+      for (const otherOption of this.options) {
+        otherOption.classList.remove('--is-active');
+      }
+      option.classList.add('--is-active');
     },
     render() {
       this.renderer.render(this.scene, this.camera);
