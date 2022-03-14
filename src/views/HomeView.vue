@@ -1,6 +1,11 @@
 <template>
   <section>
     <canvas id="c"></canvas>
+    <div class="controls">
+      <div id="js-tray" class="tray">
+        <div id="js-tray-slide" class="tray__slide"></div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -39,7 +44,7 @@ export default {
       plane: {
         geometry: [5000,5000,1,1],
         material: {
-          color: 0x0e4c94,
+          color: 0xcccccc,
           shininess: 0,
         },
       },
@@ -75,8 +80,9 @@ export default {
     this.setControls();
     // this.setSphere()
 
-
     this.render();
+    this.buildCustomColors();
+    this.addListenerToSwatches()
   },
   methods: {
     setHemiLight () {
@@ -120,7 +126,7 @@ export default {
     },
 
     setChairModel() {
-      var chairModel;
+      var chairModel = this.chairModel;
       var tempScene = this.scene;
 
       new GLTFLoader().load(
@@ -197,6 +203,41 @@ export default {
       }
       return needResize;
     },
+    buildCustomColors() {
+      var palette = document.getElementById('js-tray-slide');
+      for (let [i, color] of colors.entries()) {
+        let swatch = document.createElement('div');
+        swatch.classList.add('tray__swatch');
+
+        swatch.style.background = '#'+color.color;
+        swatch.setAttribute('data-key',i);
+        palette.append(swatch);
+      }
+    },
+    addListenerToSwatches() {
+      var swatches = document.querySelectorAll('.tray__swatch');
+
+      for (const swatch of swatches) {
+        swatch.addEventListener('click', this.handleSwatchClick);
+      }
+    },
+    handleSwatchClick(e) {
+      let color = colors[parseInt(e.target.dataset.key)];
+      let new_mtl;
+      new_mtl = new THREE.MeshPhongMaterial({
+        color: parseInt('0x'+color.color),
+        shininess: color.shininess ? color.shininess : 10
+      });
+
+      this.setMaterial( 'legs', new_mtl);
+    // },
+    // setMaterial( type, mtl) {
+    //   this.chairModel.traverse((o) => {
+    //     if (o.isMesh && o.nameID != null) {
+    //
+    //     }
+    //   })
+    // },
     render() {
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.render);
