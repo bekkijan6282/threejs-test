@@ -1,5 +1,21 @@
 <template>
   <section class="home">
+    <div id="nav-card">
+      <router-link to="/car">
+        <h4>Car 3D Model</h4>
+        <div class="w-100 text-center">
+          <img src="/models/lotus/Lotus_HW_logo_diffuse.jpg" class="w-100" alt="">
+        </div>
+      </router-link>
+    </div>
+    <div id="chair-card">
+      <router-link to="chair">
+        <h4 class="mb-1">Chair 3D Model</h4>
+        <div class="w-100 text-center">
+          <img src="/images/chair/cushions.svg" class="w-100" alt="">
+        </div>
+      </router-link>
+    </div>
     <div id="homePage"></div>
   </section>
 </template>
@@ -29,18 +45,10 @@ export default  {
     document.getElementById('homePage').appendChild(this.renderer.domElement);
     this.createStartParticle()
     this.render()
+
   },
   methods: {
     render() {
-      console.log(this.startGeometry)
-      // this.startGeometry.vertices.forEach(p => {
-      //   p.velocity += p.acceleration;
-      //   p.y -= p.velocity;
-      //   if(p.y < -200) {
-      //     p.y = 200;
-      //     p.velocity = 0;
-      //   }
-      // })
       this.startGeometry.verticesNeedUpdate = true;
       this.stars.rotation.z += 0.0005;
       this.stars.rotation.x -= 0.0005;
@@ -69,7 +77,14 @@ export default  {
       })
       this.stars = new THREE.Points(this.startGeometry, starMaterial);
       this.scene.add(this.stars)
-    }
+    },
+  },
+  beforeDestroy() {
+    this.scene.clear()
+    this.camera.clear()
+    this.renderer.clear()
+    this.renderer = null
+    document.querySelector('#homePage').remove()
   }
 }
 </script>
@@ -81,5 +96,39 @@ export default  {
     margin: 0;
     background: black;
     overflow: hidden;
+  }
+  #nav-card {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    width: 13%;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    opacity: 0.6;
+    z-index: 1;
+  }
+
+  #nav-card:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    opacity: .4;
+    z-index: -1;
+  }
+
+  #chair-card {
+    position: absolute;
+    top: 30%;
+    right: 10%;
+    width: 13%;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    opacity: 0.6;
+    z-index: 1;
   }
 </style>

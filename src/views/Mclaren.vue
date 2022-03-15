@@ -1,7 +1,9 @@
 <template>
-  <section>
+  <div class="component-main">
     <div class="options-list">
       <ul class="options-ul">
+        <li class="options-li"><a href="/">Home</a></li>
+        <li class="options-li"><a href="/chair">Chair model</a></li>
         <li class="options-li" @click="getOptionClick('wheel')">Wheel</li>
         <li class="options-li" @click="getOptionClick('tyre')">Tyre</li>
         <li class="options-li" @click="getOptionClick('headLights')">Head lights</li>
@@ -17,7 +19,7 @@
         <CarDetail :detail="activeCarDetail" @handleNewColor="handleNewColor" />
       </div>
     </b-modal>
-  </section>
+  </div>
 </template>
 
 <script>
@@ -76,7 +78,7 @@ export default {
 
     this.renderer = new THREE.WebGLRenderer({canvas: this.canvas, antialias: true});
     this.renderer.shadowMap.enabled = true;
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     document.body.appendChild(this.renderer.domElement);
 
@@ -148,7 +150,6 @@ export default {
           '/models/lotus/lotusobj.obj',
           function (obj) {
             obj.traverse((o) => {
-              console.log(o)
               if (o.isMesh) {
                 o.castShadow = true;
                 o.receiveShadow = true;
@@ -181,11 +182,6 @@ export default {
                     shininess: 1,
                   });
                 }
-                // else if (o.name === '') {
-                //   o.material = new THREE.MeshPhysicalMaterial({
-                //     color: 0xcccccc,
-                //   })
-                // }
                 else {
                   o.material = new THREE.MeshPhongMaterial({
                     color: 0xff0000,
@@ -219,9 +215,6 @@ export default {
     },
 
     render() {
-      // if(carModel) {
-      //   carModel.position.x -= 0.01;
-      // }
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.render);
       if (this.resizeRendererToDisplaySize()) {
@@ -307,6 +300,13 @@ export default {
         }
       }
     }
+  },
+  beforeDestroy() {
+    this.scene.clear()
+    this.camera.clear()
+    this.renderer.clear()
+    this.renderer = null
+    document.querySelector('#c').remove()
   }
 
 }
@@ -330,5 +330,9 @@ export default {
     margin-bottom: 5px;
     border-bottom: 1px solid #ccc;
     padding: 5px;
+  }
+  .component-main{
+    width: 90%;
+    height: 100%;
   }
 </style>

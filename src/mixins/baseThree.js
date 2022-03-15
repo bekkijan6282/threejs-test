@@ -26,7 +26,7 @@ export const baseThree = {
         this.scene.background = new THREE.Color(this.BACKGROUND_COLOR);
         if (this.hasFog)
             this.scene.fog = new THREE.Fog(this.BACKGROUND_COLOR, 20, 100);
-        this.canvas = document.querySelector("#c");
+        this.canvas = document.querySelector("#chair");
 
         this.renderer = new THREE.WebGLRenderer({canvas: this.canvas, antialias: true});
         this.renderer.shadowMap.enabled = true;

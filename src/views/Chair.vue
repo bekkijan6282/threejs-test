@@ -1,6 +1,12 @@
 <template>
   <section>
     <div class="options">
+      <div class="option">
+        <a href="/">Home</a>
+      </div>
+      <div class="option">
+        <a href="/car">Car model</a>
+      </div>
       <div class="option --is-active" data-option="legs">
         <img
             src="/images/chair/legs.svg"
@@ -32,7 +38,7 @@
         />
       </div>
     </div>
-    <canvas id="c"></canvas>
+    <canvas id="chair"></canvas>
     <div class="controls">
       <div id="js-tray" class="tray">
         <div id="js-tray-slide" class="tray__slide"></div>
@@ -183,10 +189,15 @@ export default {
       }
       if (chairModel != null && this.loaded == false) {
         this.initialRotation();
-        // DRAG_NOTICE.classList.add('start');
-
       }
     }
+  },
+  beforeDestroy() {
+    this.scene.clear()
+    this.camera.clear()
+    this.renderer.clear()
+    this.renderer = null
+    document.querySelector('#chair').remove()
   }
 }
 </script>
@@ -235,7 +246,8 @@ body {
 }
 .options {
   position: absolute;
-  left: 0;
+  left: 5px;
+  top: 50px;
 }
 .option {
   background-size: cover;
