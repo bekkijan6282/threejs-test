@@ -42,10 +42,10 @@
 </template>
 
 <script>
-import { colors } from '../config/colors';
 import * as THREE from 'three';
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import {baseThree} from "@/mixins/baseThree";
+import {chairMixin} from "@/mixins/chairMixin";
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 
 var chairModel;
 
@@ -53,18 +53,12 @@ var chairModel;
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Chair',
-  colors,
+  mixins: [
+      baseThree,
+      chairMixin,
+  ],
   data() {
     return {
-      scene: new THREE.Scene(),
-      camera: null,
-      cameraOptions: {
-        fov: 50,
-        near: 0.1,
-        far: 1000,
-      },
-      renderer: null,
-      BACKGROUND_COLOR: 0xfefefe,
       canvas: null,
       cameraFar: 5,
       hemisphereLightOptions: {
@@ -77,42 +71,16 @@ export default {
         intensity: 0.54,
         position: [-8,12,8],
       },
-      plane: {
-        geometry: [5000,5000,1,1],
-        material: {
-          color: 0xcccccc,
-          shininess: 0,
-        },
-      },
       MODEL_PATH: "/models/chair/chair.glb",
       chairModel: null,
       activeOption: 'legs',
       options: null,
       loaded: false,
       initRotate: 0,
+      hasFog: true,
     }
   },
   mounted () {
-    this.scene.background = new THREE.Color(this.BACKGROUND_COLOR);
-    this.scene.fog = new THREE.Fog(this.BACKGROUND_COLOR, 20, 100);
-    this.canvas = document.querySelector("#c");
-
-    this.renderer = new THREE.WebGLRenderer({canvas: this.canvas, antialias: true});
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-
-    document.body.appendChild(this.renderer.domElement);
-
-    this.camera = new THREE.PerspectiveCamera(
-        this.cameraOptions.fov,
-        window.innerWidth / window.innerHeight,
-        this.cameraOptions.near,
-        this.cameraOptions.far
-    );
-
-    this.camera.position.z = this.cameraFar;
-    this.camera.position.x = 0;
-
     this.setHemiLight();
     this.setDirLight();
     this.setPlane();
@@ -126,46 +94,23 @@ export default {
     this.handleChairOptionSet()
   },
   methods: {
-    setHemiLight () {
-      var hemiLight = new THREE.HemisphereLight(
-          this.hemisphereLightOptions.skyColor,
-          this.hemisphereLightOptions.groundColor,
-          this.hemisphereLightOptions.intensity,
-      );
-      hemiLight.position.set(0, 50, 0);
-      this.scene.add(hemiLight);
-    },
-    setDirLight() {
-      var dirLight = new THREE.DirectionalLight(
-          this.dirLightOptions.color,
-          this.dirLightOptions.intensity,
-      );
-      dirLight.position.set(...this.dirLightOptions.position);
-      dirLight.castShadow = true;
-      dirLight.shadow.mapSize = new THREE.Vector2(1024,1024);
-      this.scene.add(dirLight);
-    },
-    setPlane() {
-      var planeGeometry = new THREE.PlaneGeometry(...this.plane.geometry);
-      var planeMaterial = new THREE.MeshPhongMaterial(this.plane.material);
 
-      var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-      plane.rotation.x = -0.5 * Math.PI;
-      plane.receiveShadow = true;
-      plane.position.y = -1;
-      this.scene.add(plane);
-    },
-    setSphere() {
-      var geometry = new THREE.TorusGeometry(.7, .2, 16, 100);
-      var material = new THREE.PointsMaterial({
-        size: 0.05,
-        color: 0xff0000,
-      });
+    addListenerToSwatches() {
+      var swatches = document.querySelectorAll('.tray__swatch');
 
-      var sphere = new THREE.Points(geometry, material);
-      this.scene.add(sphere);
+      for (const swatch of swatches) {
+        swatch.addEventListener('click', this.handleSwatchClick);
+      }
     },
-
+    setMaterial( type, mtl) {
+      chairModel.traverse((o) => {
+        if (o.isMesh && o.nameID != null) {
+          if(o.nameID == type) {
+            o.material = mtl;
+          }
+        }
+      })
+    },
     setChairModel() {
       var tempScene = this.scene;
 
@@ -218,99 +163,6 @@ export default {
             console.log(error);
           }
       )
-    },
-    setControls() {
-      const controls = new OrbitControls(this.camera, this.renderer.domElement);
-      controls.maxPolarAngle = Math.PI / 2;
-      controls.minPolarAngle = Math.PI / 3;
-      controls.enableDamping = true;
-      controls.enablePan = false;
-      controls.dampingFactor = 0.1;
-      controls.autoRotate = false;
-      controls.autoRotateSpeed = 0.2;
-    },
-    resizeRendererToDisplaySize() {
-      const canvas = this.renderer.domElement;
-      var width = window.innerWidth;
-      var height = window.innerHeight;
-      var canvasPixelWidth = canvas.width / window.devicePixelRatio;
-      var canvasPixelHeight = canvas.height / window.devicePixelRatio;
-
-      const needResize =
-          canvasPixelWidth !== width || canvasPixelHeight !== height;
-      if (needResize) {
-        this.renderer.setSize(width, height, false);
-      }
-      return needResize;
-    },
-    buildCustomColors() {
-      var palette = document.getElementById('js-tray-slide');
-
-      for (let [i, color] of colors.entries()) {
-        let swatch = document.createElement('div');
-        swatch.classList.add('tray__swatch');
-        if (color.texture) {
-          swatch.style.backgroundImage = "url("+color.texture+")";
-        } else {
-          swatch.style.background = '#'+color.color;
-        }
-
-        swatch.setAttribute('data-key',i);
-        palette.append(swatch);
-      }
-    },
-    addListenerToSwatches() {
-      var swatches = document.querySelectorAll('.tray__swatch');
-
-      for (const swatch of swatches) {
-        swatch.addEventListener('click', this.handleSwatchClick);
-      }
-    },
-    handleSwatchClick(e) {
-      let color = colors[parseInt(e.target.dataset.key)];
-      let new_mtl;
-      if (color.texture) {
-        let txt = new THREE.TextureLoader().load(color.texture);
-        txt.repeat.set( color.size[0], color.size[1], color.size[2]);
-        txt.wrapS = THREE.RepeatWrapping;
-        txt.wrapT = THREE.RepeatWrapping;
-        new_mtl = new THREE.MeshPhongMaterial({
-          color: parseInt('0x'+color.color),
-          shininess: color.shininess ? color.shininess : 10
-        });
-      }   else
-      {
-        new_mtl = new THREE.MeshPhongMaterial({
-          color: parseInt('0x' + color.color),
-          shininess: color.shininess ? color.shininess : 10
-
-        });
-      }
-
-      this.setMaterial( this.activeOption, new_mtl);
-    },
-    setMaterial( type, mtl) {
-      chairModel.traverse((o) => {
-        if (o.isMesh && o.nameID != null) {
-          if(o.nameID == type) {
-            o.material = mtl;
-          }
-        }
-      })
-    },
-    handleChairOptionSet() {
-      this.options = document.querySelectorAll('.option');
-      for (const option of this.options) {
-        option.addEventListener('click', this.handleOptionCLick)
-      }
-    },
-    handleOptionCLick(e) {
-      let option = e.target;
-      this.activeOption = e.target.dataset.option;
-      for (const otherOption of this.options) {
-        otherOption.classList.remove('--is-active');
-      }
-      option.classList.add('--is-active');
     },
     initialRotation() {
       this.initRotate++;

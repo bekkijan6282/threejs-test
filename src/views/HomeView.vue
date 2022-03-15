@@ -42,28 +42,30 @@ export default  {
       //   }
       // })
       this.startGeometry.verticesNeedUpdate = true;
-      this.stars.rotation.y += 0.02;
+      this.stars.rotation.z += 0.0005;
+      this.stars.rotation.x -= 0.0005;
+      this.stars.rotation.y += 0.0001;
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.render);
     },
     createStartParticle() {
       this.startGeometry = new THREE.BufferGeometry();
       var pointsArray = new Array()
-      for(let i=0;i<6000;i++) {
+      for(let i=0;i<500000;i++) {
         let star = new THREE.Vector3(
-            Math.random() * 8000 - 100,
-            Math.random() * 8000 - 100,
-            Math.random() * 8000 - 100,
+            Math.random() * 8000 - 500,
+            Math.random() * 8000 - 500,
+            Math.random() * 8000 - 500,
         );
         pointsArray.push(star)
         star.velocity = 0;
-        star.acceleration = 0.2
+        star.acceleration = 0.1
         // this.startGeometry.vertices.push(star)
       }
       this.startGeometry.setFromPoints(pointsArray)
       let starMaterial = new THREE.PointsMaterial({
-        color: 0xaaaaaa,
-        size: 5
+        color: 0xffffe0,
+        size: 2.5
       })
       this.stars = new THREE.Points(this.startGeometry, starMaterial);
       this.scene.add(this.stars)
